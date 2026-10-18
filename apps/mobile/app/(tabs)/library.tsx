@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
 
 import { Loading } from "@/components/Loading";
 import { EmptyState } from "@/components/EmptyState";
@@ -11,6 +12,7 @@ import {
   openLocalDatabase,
 } from "@/localdb";
 import { createExpoAudioImportPlatform, runAudioImport } from "@/library";
+import { isImportedAudio, playback } from "@/playback";
 import { colors, radius, spacing, typography } from "@/theme";
 
 type LoadState = "loading" | "ready" | "error";
@@ -25,8 +27,11 @@ function formatBytes(bytes: number | null): string | null {
  * Library: backed entirely by the local SQLite database (offline-first).
  * No sign-in or network request is required to read local records or to
  * import audio files. "Import audio" copies a picked file into app-managed
- * storage and records it locally. The "Add sample item" action is a
- * clearly-labeled development action that stores metadata only — no file.
+ * storage and records it locally. Tapping an imported audio row starts
+ * playback and opens the player screen; tapping a metadata-only row is
+ * disabled (dev samples are never playable). The "Add sample item" action
+ * is a clearly-labeled development action that stores metadata only —
+ * no file.
  */
 export default function LibraryScreen() {
   const [state, setState] = useState<LoadState>("loading");
@@ -86,6 +91,24 @@ export default function LibraryScreen() {
       setImporting(false);
     }
   }, [importing, load]);
+
+  /**
+   * Start playback of an imported audio item. Builds the queue from the
+   * imported audio visible in the Library (selection first, list order,
+   * wrap-around skip; see buildQueue). Metadata-only samples and PDFs are
+   * rejected inline and never navigate. A missing file surfaces the same
+   * way instead of silently substituting another track.
+   */
+  const playItem = useCallback(async (item: LibraryItem) => {
+    if (!isImportedAudio(item)) {
+      setImportError("This item has no imported audio file (metadata only).");
+      return;
+    }
+    setImportError(null);
+    const started = await playback.playFromQueue(items, item.id);
+    if (started) router.push("/player");
+    else setImportError(playback.getState().message ?? "This track could not be played.");
+  }, [items]);
 
   const addSampleItem = useCallback(async () => {
     try {
@@ -167,8 +190,15 @@ export default function LibraryScreen() {
           const subtitle = isImportedFile
             ? `Imported audio${sizeLabel ? ` · ${sizeLabel}` : ""}`
             : item.artist ?? item.author ?? "Metadata only";
+          const playable = isImportedAudio(item);
           return (
-            <View style={styles.row}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={playable ? `Play ${item.title}` : item.title}
+              disabled={!playable}
+              onPress={() => void playItem(item)}
+              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            >
               <View style={styles.iconBadge}>
                 <Text style={styles.iconText}>{item.media_type === "audio" ? "♪" : "PDF"}</Text>
               </View>
@@ -180,8 +210,12 @@ export default function LibraryScreen() {
                   {subtitle}
                 </Text>
               </View>
-              <Text style={styles.date}>{item.created_at.slice(0, 10)}</Text>
-            </View>
+              {playable ? (
+                <Text style={styles.playGlyph}>▶</Text>
+              ) : (
+                <Text style={styles.date}>{item.created_at.slice(0, 10)}</Text>
+              )}
+            </Pressable>
           );
         }}
         ListFooterComponent={
@@ -252,6 +286,10 @@ const styles = StyleSheet.create({
   title: { ...typography.body, color: colors.text },
   subtitle: { ...typography.caption, color: colors.textSecondary },
   date: { ...typography.caption, color: colors.textSecondary },
+  rowPressed: {
+    backgroundColor: colors.border,
+  },
+  playGlyph: { ...typography.caption, color: colors.primary, fontWeight: "700" },
   sampleNote: {
     ...typography.caption,
     color: colors.textSecondary,

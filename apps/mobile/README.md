@@ -163,3 +163,57 @@ account, network, or backend involved.
   large-file copy performance, storage-permission edge cases.
 
 Design: ADR-007.
+
+## Local audio playback (Phase 6)
+
+Tapping an imported audio row in the Library starts playback and opens
+the player screen. Playback is fully offline; no account or network is
+involved, and metadata-only development samples cannot be played.
+
+- Engine: `expo-audio ~0.4.9` (the Expo SDK 53 version). See ADR-008.
+- Player screen (`app/player.tsx`): title, position/duration, progress,
+  play/pause, previous/next, ±15s seek, stop; loading, completed, and
+  error states are shown inline and controls are disabled when
+  unavailable. Progress updates come from engine status events, not a
+  timer.
+- Queue: the imported audio items currently listed in the Library, in
+  list order, rotated so the tapped item is first. Next/previous wrap
+  at the boundaries. Files missing from storage are dropped from the
+  queue at load time; if the current track's file is gone you get an
+  error, never a substituted track.
+- Errors: a track that fails to load or decode (missing file,
+  unsupported codec, engine failure) shows a message on the player
+  screen. No file is ever deleted automatically.
+
+### Native configuration (applied by `npx expo prebuild` / dev builds)
+
+- `app.config.ts` registers the `expo-audio` config plugin with
+  microphone access disabled (adds only
+  `android.permission.MODIFY_AUDIO_SETTINGS` on Android) and sets iOS
+  `UIBackgroundModes: ["audio"]`.
+- Background playback uses `setAudioModeAsync({ shouldPlayInBackground:
+  true })` plus the iOS background mode. **On Android this is not
+  guaranteed**: the SDK-53 version of expo-audio ships no media
+  foreground service, so the OS may stop audio while the app is
+  backgrounded. Upgrading expo-audio on a later SDK is the documented
+  path to a proper foreground service and lock-screen controls.
+- This feature requires a development build; it will not work in
+  Expo Go (native audio module + background modes).
+
+### Manual device-test checklist (not covered by automated tests)
+
+1. Build and run a dev build: `pnpm android` / `pnpm ios` from
+   `apps/mobile` (or `npx expo run:android` / `run:ios`).
+2. Import a real MP3/M4A file on the device, then play it: verify
+   start, pause/resume, ±15s seek, stop, and that the title and
+   durations display.
+3. With at least three imported files: verify next/previous, wrap-around
+   at the queue ends, and auto-advance on track completion.
+4. Delete a managed file (e.g. via a file manager on a debug build or by
+   clearing app storage) and confirm the player shows a missing-file
+   error instead of crashing.
+5. Verify an unsupported/corrupted file shows the error state.
+6. Background: lock the screen / background the app during playback —
+   iOS is expected to continue; Android is NOT guaranteed on SDK 53.
+7. Trigger an interruption (incoming call, another audio app) and check
+   the player state reflects it on return.

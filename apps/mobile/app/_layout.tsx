@@ -6,7 +6,7 @@ import { AuthProvider } from "@/auth/AuthProvider";
 /**
  * Root layout: navigation stack with the tab navigator mounted at the root.
  * Authentication screens live under (auth); the profile tab guards itself.
- * Player/reader modals will be added here in later phases.
+ * The player screen (Phase 6) lives here as a plain stack screen.
  */
 export default function RootLayout() {
   return (
@@ -20,6 +20,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)/sign-in" options={{ title: "Sign in" }} />
           <Stack.Screen name="(auth)/sign-up" options={{ title: "Create account" }} />
           <Stack.Screen name="(auth)/forgot-password" options={{ title: "Reset password" }} />
+          <Stack.Screen name="player" options={{ title: "Now playing" }} />
         </Stack>
       </>
     </AuthProvider>

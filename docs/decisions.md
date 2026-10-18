@@ -78,3 +78,35 @@
 - **D-P5-7: tsconfig paths mapping for `expo-file-system/next`** —
   upstream 18.1.11 ships broken strict-TS source; mapped to built
   declarations instead of patching vendor code.
+
+## Phase 6 — Local audio playback (2026-10-18)
+
+- **D-P6-1: expo-audio ~0.4.9 as the playback engine** (SDK-53-pinned via
+  expo install). react-native-track-player rejected: open SDK-53 compile
+  breakage (doublesymmetry#2472) and required native patches. See
+  ADR-008 for verified limitations (no lock-screen/notification controls,
+  no Android media foreground service in this expo-audio version).
+- **D-P6-2: injectable engine boundary** — PlaybackEngine/PlaybackPlatform
+  interfaces; production adapter wraps expo-audio + expo-file-system/next
+  and is imported only by app code; Node tests run the real
+  PlaybackController against a fake engine (28 tests).
+- **D-P6-3: single PlaybackController singleton** — one player, one status
+  subscription, one audio-session init; session tokens make rapid track
+  switching race-safe; progress comes from engine status events, never
+  setInterval; nothing persisted to SQLite in this phase.
+- **D-P6-4: pre-playback validation** — audio-only, not unavailable, file://
+  URI required, file must still exist; metadata-only and PDF records are
+  never playable or enqueued; error messages never expose paths; no track
+  substitution on failure.
+- **D-P6-5: queue policy** — imported audio in Library list order rotated
+  to the selection; dead entries (missing files) dropped at load time;
+  next/previous wrap at boundaries; completion auto-advances, final
+  completion settles in `completed`.
+- **D-P6-6: native config** — expo-audio config plugin with microphone
+  access disabled; iOS UIBackgroundModes:["audio"] via app.config.ts
+  (verified through `expo config --type prebuild`). Background playback is
+  NOT claimed to be verified; Android sustained background playback is
+  explicitly not guaranteed on SDK 53 (no foreground service available).
+- **D-P6-7: ±15s seek buttons instead of a slider** to avoid adding
+  @react-native-community/slider as another native dependency;
+  controller.seekTo already supports an absolute-position control later.

@@ -1,0 +1,40 @@
+{
+  "name": "@mdexs-flow/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "echo \"mobile unit tests: not yet established (Phase 4+)\" && exit 0"
+  },
+  "dependencies": {
+    "@mdexs-flow/contracts": "workspace:*",
+    "@react-native-google-signin/google-signin": "16.1.5",
+    "expo": "~53.0.0",
+    "expo-auth-session": "~6.2.1",
+    "expo-constants": "~17.1.8",
+    "expo-crypto": "~14.1.5",
+    "expo-font": "~13.3.2",
+    "expo-linking": "~7.1.7",
+    "expo-router": "~5.1.11",
+    "expo-secure-store": "~14.2.4",
+    "expo-status-bar": "~2.2.3",
+    "expo-web-browser": "~14.2.0",
+    "react": "19.0.0",
+    "react-native": "0.79.6",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.7",
+    "@types/node": "^22",
+    "@types/react": "~19.0.0",
+    "eslint": "9.39.5",
+    "eslint-config-expo": "9.2.0",
+    "typescript": "~5.8.0"
+  }
+}

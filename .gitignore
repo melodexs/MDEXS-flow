@@ -1,0 +1,40 @@
+# Root
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Node / pnpm
+node_modules/
+.pnpm-store/
+dist/
+*.tsbuildinfo
+.expo/
+.expo-shared/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Databases / local data
+*.db
+*.sqlite
+*.sqlite3
+
+# Build output / secrets
+build/
+coverage/
+*.pem
+*.key
+secrets/
+# npm lockfile (pnpm is the workspace manager)
+package-lock.json

@@ -1,0 +1,21 @@
+{
+  "name": "mdexs-flow",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "contracts": "pnpm --filter @mdexs-flow/contracts",
+    "mobile": "pnpm --filter @mdexs-flow/mobile",
+    "dev:api": "cd services/api && .venv/bin/uvicorn app.main:app --reload --port 8000",
+    "dev:api:install": "python3 -m venv services/api/.venv && services/api/.venv/bin/pip install -e \"services/api[dev]\"",
+    "dev:mobile": "pnpm --filter @mdexs-flow/mobile start",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint && pnpm api:lint",
+    "test": "pnpm -r test && pnpm api:test",
+    "api:test": "cd services/api && .venv/bin/pytest",
+    "api:lint": "cd services/api && .venv/bin/ruff check app tests && .venv/bin/ruff format --check app tests",
+    "check": "pnpm lint && pnpm typecheck && pnpm test"
+  }
+}

@@ -54,3 +54,27 @@
 - **D-P4-6: no auto-queued writes and no network in the local layer**; the
   Library screen works offline and without sign-in. Sample records are
   labeled and only created on explicit user action.
+
+## Phase 5 — Local audio import (2026-10-18)
+
+- **D-P5-1: expo-document-picker ~13.1.6** for selection (audio MIME hints,
+  copyToCacheDirectory staging); no broad storage permissions requested.
+- **D-P5-2: expo-file-system/next (18.1.x) managed storage** under
+  `<documents>/imported_audio/` with UUIDv4 destination names; user
+  filenames never form paths; destination collisions are refused, never
+  overwritten. See ADR-007.
+- **D-P5-3: defensible import sequence** — copy, verify (exists/non-zero/
+  size-match), then insert; DB failure deletes only the file this import
+  created; a record whose file disappears is deleted again.
+- **D-P5-4: no schema change** — Phase 4 `library_items` fields cover
+  import metadata; duration/artist/album remain NULL (no native tag
+  reader introduced in this phase).
+- **D-P5-5: no content dedup (documented limitation)** — same source
+  selected twice yields two records/copies; UUID names prevent
+  overwrites. A future `content_hash` migration is the justified path if
+  dedup is needed.
+- **D-P5-6: item deletion never deletes managed files** — orphan cleanup
+  is future work; sign-out/network changes never touch imported files.
+- **D-P5-7: tsconfig paths mapping for `expo-file-system/next`** —
+  upstream 18.1.11 ships broken strict-TS source; mapped to built
+  declarations instead of patching vendor code.

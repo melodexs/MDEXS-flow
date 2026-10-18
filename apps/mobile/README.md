@@ -132,3 +132,34 @@ Run the local-data-layer tests (real SQLite via sql.js WASM in Node):
 ```bash
 cd apps/mobile && pnpm test
 ```
+
+## Local audio import (Phase 5)
+
+"Import audio" on the Library screen copies a user-selected audio file
+into app-managed storage and records it in SQLite. Fully offline; no
+account, network, or backend involved.
+
+- Selection: `expo-document-picker` (native system picker). Supported
+  extensions: MP3, M4A, AAC, WAV, FLAC, OGG — as selection hints; actual
+  decode support depends on the device. Cancellation is silent.
+- Storage: `<app documents>/imported_audio/<uuid>.<ext>` via
+  `expo-file-system/next`. The original file is never modified or moved;
+  the picker URI is never stored (only the managed copy's URI is).
+- SQLite: `library_items` row with `origin: "device"`, `file_path`
+  (managed URI), `original_filename`, `mime_type`, `size_bytes`.
+  Duration/artist/album are not extracted in this phase (would need a
+  native tag reader).
+- Duplicates: no content dedup — importing the same file twice creates
+  two records and two copies. Files are never overwritten (UUID names).
+- Failures: a failed copy leaves no record; a failed record write
+  deletes the copy this import created; a record whose file vanished is
+  removed. Import errors surface inline on the Library screen.
+- Lifecycle: imports survive app restarts and sign-out; deleting an
+  item does NOT delete its file (orphan cleanup is future work).
+  Uninstalling the app removes app-managed files — imports do NOT
+  survive reinstall.
+- Needs physical-device verification: native picker behavior
+  (Android SAF `content://` URIs, iOS picker filters, OGG availability),
+  large-file copy performance, storage-permission edge cases.
+
+Design: ADR-007.

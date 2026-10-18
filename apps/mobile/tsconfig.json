@@ -4,8 +4,19 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "expo-file-system/next": [
+        "./node_modules/expo-file-system/build/next/index.d.ts"
+      ]
     }
   },
-  "include": ["app/**/*.ts", "app/**/*.tsx", "src/**/*.ts", "src/**/*.tsx", "app.config.ts"]
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "app.config.ts"
+  ]
 }

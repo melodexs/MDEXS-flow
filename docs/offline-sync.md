@@ -1,6 +1,7 @@
 # MDEXS Flow — Offline-First Sync Design (provisional)
 
-Status: **design intent**. Nothing in this document is implemented yet.
+Status: **design intent**. The local SQLite foundation described here landed in
+Phase 4 (see ADR-006); the sync engine itself remains unimplemented (Phase 9).
 
 ## Principles
 
@@ -21,7 +22,18 @@ Status: **design intent**. Nothing in this document is implemented yet.
 
 ## Outbox queue
 
-Every local mutation appends an op to the outbox:
+**Phase 4 status:** the `sync_queue` table exists (schema, statuses, attempt
+counters, pending index) with an explicit enqueue/list/update-status repository
+(`apps/mobile/src/localdb/repositories/syncQueue.ts`). Queueing is explicit —
+local mutations do NOT auto-queue yet; future feature code decides which
+writes enqueue. Nothing drains the queue or contacts the backend.
+
+A future Phase 9 engine consumes it safely and idempotently:
+claim via `listPendingOperations` → `processing`, apply server-side keyed by
+`(entity_type, entity_id)`, then `completed` or `failed` with a sanitized
+error summary. An attempt counts once per claim; retries set `next_attempt_at`.
+
+Original design follows:
 
 ```
 (id, entity_type, entity_id, op, payload_json, base_version, created_at,

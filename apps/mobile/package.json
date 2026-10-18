@@ -9,7 +9,8 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "echo \"mobile unit tests: not yet established (Phase 4+)\" && exit 0"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@mdexs-flow/contracts": "workspace:*",
@@ -22,6 +23,7 @@
     "expo-linking": "~7.1.7",
     "expo-router": "~5.1.11",
     "expo-secure-store": "~14.2.4",
+    "expo-sqlite": "~15.2.14",
     "expo-status-bar": "~2.2.3",
     "expo-web-browser": "~14.2.0",
     "react": "19.0.0",
@@ -33,8 +35,11 @@
     "@eslint/eslintrc": "3.3.7",
     "@types/node": "^22",
     "@types/react": "~19.0.0",
+    "@types/sql.js": "1.4.11",
     "eslint": "9.39.5",
     "eslint-config-expo": "9.2.0",
-    "typescript": "~5.8.0"
+    "sql.js": "1.15.0",
+    "typescript": "~5.8.0",
+    "vitest": "5.0.5"
   }
 }

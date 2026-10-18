@@ -37,3 +37,20 @@
 7. **TTS voice-pack + auth details** — provider and scope decisions. Phases 3/12.
 8. **ESLint scope** — Expo config lints app code only today; a shared root
    flat config can be extracted if the admin dashboard lands.
+
+## Phase 4 — Local SQLite data layer (2026-10-18)
+
+- **D-P4-1: expo-sqlite v15 (SDK 53)** as the local engine; repositories depend
+  on a minimal `SqlDriver` interface so the same code runs in Node tests over
+  sql.js (WASM SQLite). See ADR-006.
+- **D-P4-2: `PRAGMA user_version` + ordered, append-only migrations**; each
+  migration is atomic and a failure rolls back without data loss.
+- **D-P4-3: UUID v4 string ids, ISO-8601 UTC timestamps**; booleans stored as
+  INTEGER 0/1 and converted to typed domain objects at the repository boundary.
+- **D-P4-4: referenced library items cannot be deleted** — they are archived
+  (`unavailable = 1`) instead; no ON DELETE CASCADE in the local schema.
+- **D-P4-5: sync queue records but never syncs**; enqueueing is explicit per
+  feature, statuses/operations are CHECK-constrained, attempts count per claim.
+- **D-P4-6: no auto-queued writes and no network in the local layer**; the
+  Library screen works offline and without sign-in. Sample records are
+  labeled and only created on explicit user action.

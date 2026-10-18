@@ -102,3 +102,33 @@ physical Android/iOS device yet in this phase.
 
 End-to-end Google sign-in has **not** been tested yet (no real client IDs);
 the integration boundary and backend verification are implemented and tested.
+
+## Local database (Phase 4)
+
+Offline-first local storage lives in `src/localdb/` and requires no network
+and no sign-in:
+
+- `db.ts` — opens `mdexs_flow.db` via expo-sqlite, enables foreign keys,
+  applies migrations; `openLocalDatabase()` is idempotent.
+- `migrations.ts` / `migrate.ts` — ordered, versioned schema migrations
+  (`PRAGMA user_version`); applied atomically, never destructive.
+- `domain.ts` — typed domain objects + boundary validation.
+- `repositories/` — `libraryItems`, `progress`, `bookmarks`, `playlists`,
+  `history`, `syncQueue`. Parameterized SQL only; multi-step writes run in
+  transactions; referenced items are archived, never cascaded-deleted.
+- `driver.ts` — the minimal `SqlDriver` interface both expo-sqlite (device)
+  and sql.js (tests) implement.
+
+Design notes: ADR-006. Boundary with cloud Neon PostgreSQL: the API owns
+account data; SQLite is the offline working set. Auth tokens stay in
+expo-secure-store, never in SQLite. Binary media is never stored in rows —
+import (Phase 5+) will create app-managed files and store references.
+
+The sync queue (`repositories/syncQueue.ts`) records pending operations for
+the Phase 9 sync engine. Nothing drains it or calls the network today.
+
+Run the local-data-layer tests (real SQLite via sql.js WASM in Node):
+
+```bash
+cd apps/mobile && pnpm test
+```

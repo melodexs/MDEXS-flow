@@ -8,6 +8,15 @@ const config: ExpoConfig = {
   scheme: "mdexsflow",
   userInterfaceStyle: "automatic",
   platforms: ["android", "ios"],
+  // EAS project link (official `eas init` values; written manually because the
+  // CLI cannot write dynamic configs). Links to the EXISTING project
+  // melodexss-team/mdexs-flow — no new project is created.
+  owner: "melodexss-team",
+  extra: {
+    eas: {
+      projectId: "da6795d1-b4b4-4287-8160-005eb295ccd0",
+    },
+  },
   // expo-audio: microphone access is DISABLED (playback-only app) — the
   // plugin then only adds android.permission.MODIFY_AUDIO_SETTINGS.
   // Note: in the SDK 53 version of expo-audio the plugin has no
